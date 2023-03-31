@@ -6,7 +6,7 @@
     <meta content='width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
     <meta name="viewport" content="width=device-width" />
     <meta name="license" content="
-        Copyright 2013 Google, Abram Hindle
+        Copyright 2023 Google, Abram Hindle, Curtis Kennedy
         
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@
         See the License for the specific language governing permissions and
         limitations under the License.
     "/>
+    <link rel="stylesheet" type="text/css" href="style.css">
     <script src="json2.js"></script>
   </head> 
-  <body bgcolor="white" height="100%" width="100%"> 
+  <!-- <body bgcolor="white" height="100%" width="100%">  -->
+  <body height="100%" width="100%"> 
     <div id="debug"></div>
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
 
@@ -47,14 +49,20 @@ world = {};
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
-        beginPath();                
+        beginPath();              
         lineWidth = 3;
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
-        fillStyle = entity["colour"];
+        // fillStyle = entity["colour"];
+        var grad = createRadialGradient(x, y, 4, x, y, 40);
+        grad.addColorStop(0, entity["colour"]);
+        grad.addColorStop(1, "black");
+        fillStyle = grad;
+
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        arc(x, y, (entity["radius"])?entity["radius"]:10, 0, 2.0 * Math.PI, false);  
+        fill()
         stroke();                                
     }
 }
@@ -73,7 +81,8 @@ function clearFrame() {
     with(context) {
 	moveTo(0,0);
 	fillStyle = "#000";
-	fillRect(0,0,W,H);
+	// fillRect(0,0,W,H);
+    clearRect(0,0,W,H);
     }
 
 }
@@ -123,8 +132,11 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    drawNextFrame(); // (but should we?)
+    // drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    let p = {};
+    p[entity] = data;
+    socket.send(JSON.stringify(p));
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -230,17 +242,27 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
+// Random array element code adapted from https://stackoverflow.com/a/4550514
+// Author: Jacob Relkin https://stackoverflow.com/users/220819/jacob-relkin
+// Date: Dec 29, 2010
+// Edited by: jakanz https://stackoverflow.com/users/14460120/jakanz
+// Date: Oct 18, 2020
+// License: https://creativecommons.org/licenses/by-sa/4.0/
+colors = ['Aqua', 'Aquamarine', 'BlueViolet', 'DarkTurquoise']
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    const randomElement = colors[Math.floor(Math.random() * colors.length)];
+    addEntityWithoutName({'x':x,'y':y,'colour':randomElement, 'radius':20});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    const randomElement = colors[Math.floor(Math.random() * colors.length)];
+    addEntityWithoutName({'x':x,'y':y,'colour':randomElement, 'radius':20});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    const randomElement = colors[Math.floor(Math.random() * colors.length)];
+    addEntityWithoutName({'x':x,'y':y,'colour':randomElement,
+                          'radius':15});
 });
 
 
@@ -254,6 +276,11 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        console.log("Socket opened!")
+        // ask for the world state
+        fetch("http://"+host+"/world").then((res) => res.json()).then(
+            (data) => {world = data;
+            renderFrame()});
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,7 +288,15 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+
+            // get updates from other clients
+            d = JSON.parse(msg.data);
+            let entity = Object.keys(d)[0];
+
+            world[entity] = d[entity];
+
+            renderFrame();
         } catch (e) {
             alert("socket on message: " + e);
         }

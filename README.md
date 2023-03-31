@@ -7,6 +7,35 @@ See requirements.org (plain-text) for a description of the project.
 
 Make a shared state Websockets drawing program
 
+Citations
+=====
+
+Used https://www.cssmatic.com/noise-texture to create a noisy image to help simulate old paper.
+
+---
+
+index.html random array element code adapted from https://stackoverflow.com/a/4550514
+
+Author: Jacob Relkin https://stackoverflow.com/users/220819/jacob-relkin
+
+Date: Dec 29, 2010
+
+Edited by: jakanz https://stackoverflow.com/users/14460120/jakanz
+
+Date: Oct 18, 2020
+
+License: https://creativecommons.org/licenses/by-sa/4.0/
+
+---
+
+Adapted websocket code from CMPUT 404 example code.
+
+Author: Abram Hindle
+
+Link: https://github.com/abramhindle/WebSocketsExamples
+
+License: Apache 2
+
 Prereqs
 =======
 Create a virtual environment and install the required dependencies.
@@ -20,13 +49,13 @@ pip install -r requirements.txt
 Contributors / Licensing
 ========================
 
-Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle.
+Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle, Curtis Kennedy.
 
 freetests.py is LICENSE'D under a BSD-like license:
 
 From ws4py
 
-Copyright (c) 2011-2014, Sylvain Hellegouarch, Abram Hindle
+Copyright (c) 2011-2023, Sylvain Hellegouarch, Abram Hindle
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -59,3 +88,4 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+* Curtis Kennedy
